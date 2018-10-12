@@ -15,9 +15,10 @@ import tensorflow as tf
 import math
 from tensorflow.contrib import learn
 import datetime
+import sys
 
 import pickle
-import DeepCoNN
+from model import DeepCoNN
 
 tf.flags.DEFINE_string("word2vec", "../data/google.bin", "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_string("valid_data","../data/music/music.valid", " Data for validation")
@@ -88,7 +89,7 @@ def dev_step(u_batch, i_batch, uid, iid, y_batch, writer=None):
 
 if __name__ == '__main__':
     FLAGS = tf.flags.FLAGS
-    FLAGS._parse_flags()
+    FLAGS(sys.argv)
     print("\nParameters:")
     for attr, value in sorted(FLAGS.__flags.items()):
         print("{}={}".format(attr.upper(), value))
@@ -158,7 +159,7 @@ if __name__ == '__main__':
                     header = f.readline()
                     vocab_size, layer1_size = map(int, header.split())
                     binary_len = np.dtype('float32').itemsize * layer1_size
-                    for line in xrange(vocab_size):
+                    for line in range(vocab_size):
                         word = []
                         while True:
                             ch = f.read(1)
@@ -185,7 +186,7 @@ if __name__ == '__main__':
                     header = f.readline()
                     vocab_size, layer1_size = map(int, header.split())
                     binary_len = np.dtype('float32').itemsize * layer1_size
-                    for line in xrange(vocab_size):
+                    for line in range(vocab_size):
                         word = []
                         while True:
                             ch = f.read(1)
@@ -205,7 +206,7 @@ if __name__ == '__main__':
                 sess.run(deep.W2.assign(initW))
 
             l = (train_length / FLAGS.batch_size) + 1
-            print l
+            print(l)
             ll = 0
             epoch = 1
             best_mae = 5
@@ -257,7 +258,7 @@ if __name__ == '__main__':
 
                     if batch_num % 1000 == 0 and batch_num > 1:
                         print("\nEvaluation:")
-                        print batch_num
+                        print(batch_num)
                         loss_s = 0
                         accuracy_s = 0
                         mae_s = 0
@@ -287,9 +288,9 @@ if __name__ == '__main__':
                                                                                              accuracy_s / test_length),
                                                                                          mae_s / test_length))
 
-                print str(epoch) + ':\n'
+                print(str(epoch) + ':\n')
                 print("\nEvaluation:")
-                print "train:rmse,mae:", train_rmse / ll, train_mae / ll
+                print("train:rmse,mae:", train_rmse / ll, train_mae / ll)
                 train_rmse = 0
                 train_mae = 0
 
@@ -326,7 +327,7 @@ if __name__ == '__main__':
                 if best_mae > mae:
                     best_mae = mae
                 print("")
-            print 'best rmse:', best_rmse
-            print 'best mae:', best_mae
+            print('best rmse:', best_rmse)
+            print('best mae:', best_mae)
 
-    print 'end'
+    print('end')

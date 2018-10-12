@@ -136,13 +136,13 @@ class DeepCoNN(object):
             inter=tf.nn.dropout(inter,self.dropout_keep_prob)
 
             inter=tf.reduce_sum(inter,1,keep_dims=True)
-            print inter
+            print(inter)
             b=tf.Variable(tf.constant(0.1), name='bias')
             
 
             self.predictions =one+inter+b
 
-            print self.predictions
+            print(self.predictions)
         with tf.name_scope("loss"):
             #losses = tf.reduce_mean(tf.square(tf.subtract(self.predictions, self.input_y)))
             losses = tf.nn.l2_loss(tf.subtract(self.predictions, self.input_y))
