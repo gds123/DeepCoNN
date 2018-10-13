@@ -156,11 +156,13 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review):
 
     user_reviews = pickle.load(f1)
     item_reviews = pickle.load(f2)
+    u_text = {}
+    i_text = {}
+
+    print("train")
     uid_train = []
     iid_train = []
     y_train = []
-    u_text = {}
-    i_text = {}
     for line in f_train:
         line = line.split(',')
         uid = int(line[0])
@@ -249,7 +251,7 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
             yield shuffled_data[start_index:end_index]
 
 
-if __name__ == '__main__':
+def main():
     TPS_DIR = '../data/music'
     FLAGS = tf.flags.FLAGS
     FLAGS(sys.argv)  # FLAGS._parse_flags()
@@ -274,11 +276,9 @@ if __name__ == '__main__':
     itemid_valid = iid_valid[:, np.newaxis]
 
     batches_train = list(zip(userid_train, itemid_train, y_train))
-    batches_test = list(zip(userid_valid, itemid_valid, y_valid))
-    output = open(os.path.join(TPS_DIR, 'music.train'), 'wb')
-    pickle.dump(batches_train, output)
-    output = open(os.path.join(TPS_DIR, 'music.test'), 'wb')
-    pickle.dump(batches_test, output)
+    batches_valid = list(zip(userid_valid, itemid_valid, y_valid))
+    pickle.dump(batches_train, open(os.path.join(TPS_DIR, 'music.train'), 'wb'))
+    pickle.dump(batches_valid, open(os.path.join(TPS_DIR, 'music.valid'), 'wb'))
 
     para = {}
     para['user_num'] = user_num
@@ -294,3 +294,6 @@ if __name__ == '__main__':
     output = open(os.path.join(TPS_DIR, 'music.para'), 'wb')
 
     pickle.dump(para, output)
+
+if __name__ == '__main__':
+    main()

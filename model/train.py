@@ -18,25 +18,24 @@ import datetime
 import sys
 
 import pickle
-from model import DeepCoNN
+from model import myDeepCoNN
 
-tf.flags.DEFINE_string("word2vec", "../data/google.bin", "Word2vec file with pre-trained embeddings (default: None)")
-tf.flags.DEFINE_string("valid_data","../data/music/music.valid", " Data for validation")
+tf.flags.DEFINE_string("word2vec", "../data/glove.6B/glove.6B.50d.txt", "Word2vec file with pre-trained embeddings (default: None)")
+tf.flags.DEFINE_string("valid_data", "../data/music/music.valid", " Data for validation")
 tf.flags.DEFINE_string("para_data", "../data/music/music.para", "Data parameters")
 tf.flags.DEFINE_string("train_data", "../data/music/music.train", "Data for training")
 
 # ==================================================
 
 # Model Hyperparameters
-#tf.flags.DEFINE_string("word2vec", "./data/rt-polaritydata/google.bin", "Word2vec file with pre-trained embeddings (default: None)")
-tf.flags.DEFINE_integer("embedding_dim", 300, "Dimensionality of character embedding ")
+tf.flags.DEFINE_integer("embedding_dim", 50, "Dimensionality of character embedding ")
 tf.flags.DEFINE_string("filter_sizes", "3", "Comma-separated filter sizes ")
-tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
+tf.flags.DEFINE_string("num_filters", "100", "Number of filters per filter size")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability ")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.0, "L2 regularizaion lambda")
 tf.flags.DEFINE_float("l2_reg_V", 0, "L2 regularizaion V")
 # Training parameters
-tf.flags.DEFINE_integer("batch_size",100, "Batch Size ")
+tf.flags.DEFINE_integer("batch_size", 100, "Batch Size ")
 tf.flags.DEFINE_integer("num_epochs", 40, "Number of training epochs ")
 tf.flags.DEFINE_integer("evaluate_every", 100, "Evaluate model on dev set after this many steps ")
 tf.flags.DEFINE_integer("checkpoint_every", 100, "Save model after this many steps ")
@@ -92,7 +91,8 @@ if __name__ == '__main__':
     FLAGS(sys.argv)
     print("\nParameters:")
     for attr, value in sorted(FLAGS.__flags.items()):
-        print("{}={}".format(attr.upper(), value))
+        # print("{}={}".format(attr.upper(), value))
+        pass
     print("")
 
     print("Loading data...")
@@ -122,7 +122,8 @@ if __name__ == '__main__':
         session_conf.gpu_options.allow_growth = True
         sess = tf.Session(config=session_conf)
         with sess.as_default():
-            deep = DeepCoNN.DeepCoNN(
+            print("Creating graph...")
+            deep = myDeepCoNN.DeepCoNN(
                 user_num=user_num,
                 item_num=item_num,
                 user_length=user_length,
@@ -133,7 +134,7 @@ if __name__ == '__main__':
                 embedding_size=FLAGS.embedding_dim,
                 fm_k=8,
                 filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
-                num_filters=FLAGS.num_filters,
+                num_filters=list(map(int, FLAGS.num_filters.split(","))),
                 l2_reg_lambda=FLAGS.l2_reg_lambda,
                 l2_reg_V=FLAGS.l2_reg_V,
                 n_latent=32)
@@ -147,62 +148,29 @@ if __name__ == '__main__':
             grads_and_vars = optimizer.compute_gradients(deep.loss)'''
             train_op = optimizer  # .apply_gradients(grads_and_vars, global_step=global_step)
 
-            sess.run(tf.initialize_all_variables())
+            sess.run(tf.initializers.global_variables())
 
             if FLAGS.word2vec:
-                # initial matrix with random uniform
-                u = 0
-                initW = np.random.uniform(-1.0, 1.0, (len(vocabulary_user), FLAGS.embedding_dim))
-                # load any vectors from the word2vec
                 print("Load word2vec u file {}\n".format(FLAGS.word2vec))
-                with open(FLAGS.word2vec, "rb") as f:
-                    header = f.readline()
-                    vocab_size, layer1_size = map(int, header.split())
-                    binary_len = np.dtype('float32').itemsize * layer1_size
-                    for line in range(vocab_size):
-                        word = []
-                        while True:
-                            ch = f.read(1)
-                            if ch == ' ':
-                                word = ''.join(word)
-                                break
-                            if ch != '\n':
-                                word.append(ch)
-                        idx = 0
-
+                initW = np.random.uniform(-1.0, 1.0, (len(vocabulary_user), FLAGS.embedding_dim))
+                with open(FLAGS.word2vec, "r") as f:
+                    for line in f:
+                        l = line.split()
+                        word = l[0]
                         if word in vocabulary_user:
-                            u = u + 1
                             idx = vocabulary_user[word]
-                            initW[idx] = np.fromstring(f.read(binary_len), dtype='float32')
-                        else:
-                            f.read(binary_len)
+                            initW[idx] = np.array(l[1:], dtype=np.float32)
                 sess.run(deep.W1.assign(initW))
-                initW = np.random.uniform(-1.0, 1.0, (len(vocabulary_item), FLAGS.embedding_dim))
-                # load any vectors from the word2vec
+
                 print("Load word2vec i file {}\n".format(FLAGS.word2vec))
-
-                item = 0
-                with open(FLAGS.word2vec, "rb") as f:
-                    header = f.readline()
-                    vocab_size, layer1_size = map(int, header.split())
-                    binary_len = np.dtype('float32').itemsize * layer1_size
-                    for line in range(vocab_size):
-                        word = []
-                        while True:
-                            ch = f.read(1)
-                            if ch == ' ':
-                                word = ''.join(word)
-                                break
-                            if ch != '\n':
-                                word.append(ch)
-                        idx = 0
+                initW = np.random.uniform(-1.0, 1.0, (len(vocabulary_item), FLAGS.embedding_dim))
+                with open(FLAGS.word2vec, "r") as f:
+                    for line in f:
+                        l = line.split()
+                        word = l[0]
                         if word in vocabulary_item:
-                            item = item + 1
                             idx = vocabulary_item[word]
-                            initW[idx] = np.fromstring(f.read(binary_len), dtype='float32')
-                        else:
-                            f.read(binary_len)
-
+                            initW[idx] = np.array(l[1:], dtype=np.float32)
                 sess.run(deep.W2.assign(initW))
 
             l = (train_length / FLAGS.batch_size) + 1
@@ -232,6 +200,7 @@ if __name__ == '__main__':
             batch_size = 100
             ll = int(len(train_data) / batch_size)
 
+            print("start training...")
             for epoch in range(40):
                 # Shuffle the data at each epoch
                 shuffle_indices = np.random.permutation(np.arange(data_size_train))
