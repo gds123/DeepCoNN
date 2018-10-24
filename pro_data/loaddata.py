@@ -119,11 +119,11 @@ for i in data2.values:
         item_reviews[i[1]] = [0]
         item_rid[i[1]] = ['0']
 #
-# print(item_reviews[len(item_reviews) - 1])
-# pickle.dump(user_reviews, open(os.path.join(TPS_DIR, 'user_review'), 'wb'))
-# pickle.dump(item_reviews, open(os.path.join(TPS_DIR, 'item_review'), 'wb'))
-# pickle.dump(user_rid, open(os.path.join(TPS_DIR, 'user_rid'), 'wb'))
-# pickle.dump(item_rid, open(os.path.join(TPS_DIR, 'item_rid'), 'wb'))
+print(item_reviews[len(item_reviews) - 1])
+pickle.dump(user_reviews, open(os.path.join(TPS_DIR, 'user_review'), 'wb'))
+pickle.dump(item_reviews, open(os.path.join(TPS_DIR, 'item_review'), 'wb'))
+pickle.dump(user_rid, open(os.path.join(TPS_DIR, 'user_rid'), 'wb'))
+pickle.dump(item_rid, open(os.path.join(TPS_DIR, 'item_rid'), 'wb'))
 
 usercount, itemcount = get_count(data, 'user_id'), get_count(data, 'item_id')
 

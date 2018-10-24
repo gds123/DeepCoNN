@@ -86,6 +86,7 @@ def dev_step(u_batch, i_batch, uid, iid, y_batch, writer=None):
 
     return [loss, accuracy, mae]
 
+
 if __name__ == '__main__':
     FLAGS = tf.flags.FLAGS
     FLAGS(sys.argv)
@@ -183,16 +184,13 @@ if __name__ == '__main__':
             train_rmse = 0
 
             pkl_file = open(FLAGS.train_data, 'rb')
-
             train_data = pickle.load(pkl_file)
-
-            train_data = np.array(train_data)
+            train_data = np.array(train_data, dtype=np.int)
             pkl_file.close()
 
             pkl_file = open(FLAGS.valid_data, 'rb')
-
             test_data = pickle.load(pkl_file)
-            test_data = np.array(test_data)
+            test_data = np.array(test_data, dtype=np.int)
             pkl_file.close()
 
             data_size_train = len(train_data)
@@ -225,9 +223,8 @@ if __name__ == '__main__':
                     train_rmse += t_rmse
                     train_mae += t_mae
 
-                    if batch_num % 1000 == 0 and batch_num > 1:
-                        print("\nEvaluation:")
-                        print(batch_num)
+                    if batch_num % 1 == 0 and batch_num > 1:
+                        print("\nEvaluation: ", batch_num, "step")
                         loss_s = 0
                         accuracy_s = 0
                         mae_s = 0
@@ -237,7 +234,8 @@ if __name__ == '__main__':
                             start_index = batch_num2 * batch_size
                             end_index = min((batch_num2 + 1) * batch_size, data_size_test)
                             data_test = test_data[start_index:end_index]
-
+                            # print("test_data ", test_data)
+                            # print("data_test ", data_test)
                             userid_valid, itemid_valid, y_valid = zip(*data_test)
 
                             u_valid = []
@@ -247,15 +245,14 @@ if __name__ == '__main__':
                                 i_valid.append(i_text[itemid_valid[i][0]])
                             u_valid = np.array(u_valid)
                             i_valid = np.array(i_valid)
-
                             loss, accuracy, mae = dev_step(u_valid, i_valid, userid_valid, itemid_valid, y_valid)
                             loss_s = loss_s + len(u_valid) * loss
                             accuracy_s = accuracy_s + len(u_valid) * np.square(accuracy)
                             mae_s = mae_s + len(u_valid) * mae
-                        print ("loss_valid {:g}, rmse_valid {:g}, mae_valid {:g}".format(loss_s / test_length,
-                                                                                         np.sqrt(
-                                                                                             accuracy_s / test_length),
-                                                                                         mae_s / test_length))
+                        print("loss_valid {:g}, rmse_valid {:g}, mae_valid {:g}".format(loss_s / test_length,
+                                                                                        np.sqrt(
+                                                                                            accuracy_s / test_length),
+                                                                                        mae_s / test_length))
 
                 print(str(epoch) + ':\n')
                 print("\nEvaluation:")
@@ -286,9 +283,9 @@ if __name__ == '__main__':
                     loss_s = loss_s + len(u_valid) * loss
                     accuracy_s = accuracy_s + len(u_valid) * np.square(accuracy)
                     mae_s = mae_s + len(u_valid) * mae
-                print ("loss_valid {:g}, rmse_valid {:g}, mae_valid {:g}".format(loss_s / test_length,
-                                                                                 np.sqrt(accuracy_s / test_length),
-                                                                                 mae_s / test_length))
+                print("loss_valid {:g}, rmse_valid {:g}, mae_valid {:g}".format(loss_s / test_length,
+                                                                                np.sqrt(accuracy_s / test_length),
+                                                                                mae_s / test_length))
                 rmse = np.sqrt(accuracy_s / test_length)
                 mae = mae_s / test_length
                 if best_rmse > rmse:
@@ -300,3 +297,4 @@ if __name__ == '__main__':
             print('best mae:', best_mae)
 
     print('end')
+

@@ -138,6 +138,7 @@ def load_data(train_data, valid_data, user_review, item_review):
     uid_valid = np.array(uid_valid)
     iid_train = np.array(iid_train)
     iid_valid = np.array(iid_valid)
+    print("uid_valid in load_data", uid_valid)
 
     return [u_text, i_text, y_train, y_valid, vocabulary_user, vocabulary_inv_user, vocabulary_item,
             vocabulary_inv_item,
@@ -193,8 +194,8 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review):
         line = line.split(',')
         uid = int(line[0])
         iid = int(line[1])
-        uid_train.append(int(line[0]))
-        iid_train.append(int(line[1]))
+        uid_valid.append(int(line[0]))
+        iid_valid.append(int(line[1]))
         if uid not in u_text:
             u_text[uid] = '<PAD/>'
             for s in user_reviews[uid]:
@@ -277,8 +278,8 @@ def main():
 
     batches_train = list(zip(userid_train, itemid_train, y_train))
     batches_valid = list(zip(userid_valid, itemid_valid, y_valid))
-    pickle.dump(batches_train, open(os.path.join(TPS_DIR, 'music.train'), 'wb'))
-    pickle.dump(batches_valid, open(os.path.join(TPS_DIR, 'music.valid'), 'wb'))
+    # print(batches_train[0][0])
+    # print(batches_valid)
 
     para = {}
     para['user_num'] = user_num
@@ -291,9 +292,10 @@ def main():
     para['test_length'] = len(y_valid)
     para['u_text'] = u_text
     para['i_text'] = i_text
-    output = open(os.path.join(TPS_DIR, 'music.para'), 'wb')
 
-    pickle.dump(para, output)
+    pickle.dump(para, open(os.path.join(TPS_DIR, 'music.para'), 'wb'))
+    pickle.dump(batches_train, open(os.path.join(TPS_DIR, 'music.train'), 'wb'))
+    pickle.dump(batches_valid, open(os.path.join(TPS_DIR, 'music.valid'), 'wb'))
 
 if __name__ == '__main__':
     main()
